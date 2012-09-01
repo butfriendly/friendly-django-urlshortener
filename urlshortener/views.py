@@ -9,10 +9,12 @@ from django.contrib.sites.models import RequestSite
 from forms import ShortURLForm
 from models import ShortURL
 from shortcuts import get_shorturl_or_404
+from signals import shorturl_redirect, shorturl_preview
 
 @require_GET
 def redirect(request, key):
     short_url = get_shorturl_or_404(key)
+    shorturl_redirect.send(sender=None, short_url_id=short_url.id, request=request)
     return HttpResponsePermanentRedirect(short_url.url)
 
 @login_required
@@ -35,6 +37,6 @@ def add(request):
 
 @require_GET
 def preview(request, key):
-
     short_url = get_shorturl_or_404(key)
+    shorturl_preview.send(sender=None, short_url_id=short_url.id, request=request)
     return render(request, 'urlshortener/preview.html', {'short_url': short_url, 'current_site': RequestSite(request)})
